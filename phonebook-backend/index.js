@@ -59,11 +59,29 @@ app.post('/api/persons', (request, response) => {
   const randomId = Math.floor(Math.random()*999999)
 
   const body = request.body
-  console.log(body)
+
+  if (!body.name) {
+    return response.status(400).json({
+      error: 'Name field is missing'
+    })
+  }
+
+  if (!body.number) {
+    return response.status(400).json({
+      error: 'Number field is missing'
+    })
+  }
+
   const person ={
     id: randomId,
     name: body.name,
     number: body.number,
+  }
+
+  if (persons.find(p => p.name === person.name)){
+    return response.status(400).json({
+      error: 'A person with that name already exists'
+    })
   }
 
   persons = persons.concat(person)
