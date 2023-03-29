@@ -5,6 +5,7 @@ const cors = require('cors')
 const app = express()
 
 const Person = require('./models/person')
+const { response } = require('express')
 
 app.use(express.static('build'))
 app.use(express.json())
@@ -45,7 +46,7 @@ app.delete('/api/persons/:id', (request, response, next) => {
     .then(result => {
       response.status(204).end()
     })
-    // .catch(error => next(error))
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response) => {
@@ -69,15 +70,30 @@ app.post('/api/persons', (request, response) => {
     number: body.number,
   })
 
-  // if (persons.find(p => p.name === person.name)){
-  //   return response.status(400).json({
-  //     error: 'A person with that name already exists'
-  //   })
-  // }
+  if (persons.find(p => p.name === person.name)){
+    return response.status(400).json({
+      error: 'A person with that name already exists'
+    })
+  }
 
   person.save().then(savedPerson => {
     response.json(savedPerson)
   })
+})
+
+app.put('/api/persons/:id', (request, response, next) => {
+  const body = request.body
+
+  const person = {
+    name: body.name,
+    number: body.number,
+  }
+
+  Person.findByIdAndUpdate(request.params.id, person, {new: true})
+    .then(updatedPerson => {
+      response.json(updatedPerson)
+    })
+    .catch(error => next(error))
 })
 
 const unknownEndpoint = (request, response) => {
